@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { getAuth, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { addDoc, collection, deleteDoc, doc, getFirestore, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -20,7 +20,11 @@ if(!isConfigured()){
 }else{
   const app=initializeApp(firebaseConfig);
   auth=getAuth(app);db=getFirestore(app);
-  onAuthStateChanged(auth,user=>user?openList(user):showLogin());
+  getRedirectResult(auth).catch(showError);
+  onAuthStateChanged(auth,user=>{
+    try{user?openList(user):showLogin()}
+    catch(error){showLogin();showError(error)}
+  });
 }
 
 function showLogin(){
@@ -63,12 +67,18 @@ function subscribeToList(){
 
 $("#loginBtn").onclick=async()=>{
   const provider=new GoogleAuthProvider();
-  try{await signInWithPopup(auth,provider)}
+  const useRedirect=matchMedia("(pointer: coarse)").matches||innerWidth<800;
+  $("#loginBtn").disabled=true;
+  try{
+    if(useRedirect)await signInWithRedirect(auth,provider);
+    else await signInWithPopup(auth,provider);
+  }
   catch(error){
     if(["auth/popup-blocked","auth/cancelled-popup-request","auth/operation-not-supported-in-this-environment"].includes(error.code)){
       await signInWithRedirect(auth,provider);
     }else showError(error);
   }
+  finally{$("#loginBtn").disabled=false}
 };
 
 $("#addForm").onsubmit=async event=>{
@@ -100,3 +110,6 @@ function showError(error){
   };
   toast(messages[error.code]||messages[error.message]||"通信に失敗しました。もう一度お試しください");
 }
+
+window.addEventListener("error",event=>showError(event.error||new Error(event.message)));
+window.addEventListener("unhandledrejection",event=>showError(event.reason||new Error("通信エラー")));
