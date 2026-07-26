@@ -6,5 +6,24 @@
   "background_color": "#f8f1e5",
   "theme_color": "#f47f6b",
   "orientation": "portrait",
-  "icons": []
+  "icons": [
+    {
+      "src": "icons/shopping-basket-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/shopping-basket-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/shopping-basket-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
