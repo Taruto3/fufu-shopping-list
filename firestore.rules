@@ -4,7 +4,7 @@ service cloud.firestore {
     function isFamily() {
       return request.auth != null
         && request.auth.token.email in [
-          "YOUR_GOOGLE_EMAIL_1",
+          "hafuxu1227@gmail.com",
           "YOUR_GOOGLE_EMAIL_2"
         ];
     }
@@ -19,6 +19,20 @@ service cloud.firestore {
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 60
         && request.resource.data.createdBy == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /shoppingLists/family/completed/{itemId} {
+      allow read, delete: if isFamily();
+      allow create: if isFamily()
+        && request.resource.data.keys().hasOnly([
+          "name", "createdAt", "createdBy", "createdByName",
+          "completedAt", "completedBy", "completedByName"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.completedBy == request.auth.uid;
       allow update: if false;
     }
   }

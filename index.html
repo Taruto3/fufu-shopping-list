@@ -42,26 +42,54 @@
     </section>
 
     <section id="listView" class="list-view hidden">
-      <form id="addForm" class="add-form">
-        <label for="itemInput">買うもの</label>
-        <div class="input-row">
-          <input id="itemInput" name="item" type="text" maxlength="60" autocomplete="off" placeholder="例：牛乳" required>
-          <button type="submit" aria-label="リストに追加"><span>＋</span>追加</button>
+      <nav class="list-tabs" aria-label="リスト表示の切り替え">
+        <button class="tab-btn active" type="button" data-tab="active">
+          買い物リスト <b id="activeTabCount">0</b>
+        </button>
+        <button class="tab-btn" type="button" data-tab="completed">
+          買い物済み <b id="completedTabCount">0</b>
+        </button>
+      </nav>
+
+      <section id="activePanel" class="list-panel">
+        <form id="addForm" class="add-form">
+          <label for="itemInput">買うもの</label>
+          <div class="input-row">
+            <input id="itemInput" name="item" type="text" maxlength="60" autocomplete="off" placeholder="例：牛乳" required>
+            <button type="submit" aria-label="リストに追加"><span>＋</span>追加</button>
+          </div>
+        </form>
+
+        <div class="list-heading">
+          <h2>買うもの</h2>
+          <span id="itemCount">0個</span>
         </div>
-      </form>
 
-      <div class="list-heading">
-        <h2>買うもの</h2>
-        <span id="itemCount">0個</span>
-      </div>
+        <div id="loadingView" class="status-card">読み込み中…</div>
+        <div id="emptyView" class="empty-view hidden">
+          <span>✓</span>
+          <h3>ぜんぶ買えました</h3>
+          <p>必要なものができたら追加しましょう</p>
+        </div>
+        <ul id="shoppingList" class="shopping-list" aria-live="polite"></ul>
+      </section>
 
-      <div id="loadingView" class="status-card">読み込み中…</div>
-      <div id="emptyView" class="empty-view hidden">
-        <span>✓</span>
-        <h3>ぜんぶ買えました</h3>
-        <p>必要なものができたら追加しましょう</p>
-      </div>
-      <ul id="shoppingList" class="shopping-list" aria-live="polite"></ul>
+      <section id="completedPanel" class="list-panel hidden">
+        <div class="list-heading completed-heading">
+          <div>
+            <h2>買い物済み</h2>
+            <small>買い終わった品物の履歴です</small>
+          </div>
+          <span id="completedCount">0個</span>
+        </div>
+        <div id="completedLoadingView" class="status-card">読み込み中…</div>
+        <div id="completedEmptyView" class="empty-view hidden">
+          <span>🧺</span>
+          <h3>履歴はまだありません</h3>
+          <p>購入済みにした品物がここに残ります</p>
+        </div>
+        <ul id="completedList" class="shopping-list completed-list" aria-live="polite"></ul>
+      </section>
     </section>
 
     <div id="accountMenu" class="account-menu hidden">
@@ -73,6 +101,6 @@
     <div id="toast" class="toast hidden" role="status"></div>
   </main>
 
-  <script type="module" src="app.js?v=3"></script>
+  <script type="module" src="app.js?v=4"></script>
 </body>
 </html>
