@@ -86,7 +86,7 @@ function subscribeToLists(){
       const date=item.completedAt&&typeof item.completedAt.toDate==="function"?item.completedAt.toDate():null;
       const dateText=date?`${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,"0")}`:"";
       const li=document.createElement("li");li.className="shopping-item";
-      li.innerHTML=`<div class="item-main"><div class="item-name-row"><p>${escapeText(item.name)}</p><button class="restore-btn" type="button" aria-label="${escapeText(item.name)}を買い物リストに戻す">←</button></div><small>${escapeText(dateText)}　${escapeText(item.completedByName||"")}</small></div><button class="delete-btn" type="button" aria-label="${escapeText(item.name)}の履歴を削除">×</button>`;
+      li.innerHTML=`<div class="item-main"><p>${escapeText(item.name)}</p><small>${escapeText(dateText)}　${escapeText(item.completedByName||"")}</small></div><button class="restore-btn" type="button" aria-label="${escapeText(item.name)}を買い物リストに戻す">↩</button><button class="delete-btn" type="button" aria-label="${escapeText(item.name)}の履歴を削除">×</button>`;
       li.querySelector(".restore-btn").onclick=async()=>{
         li.style.opacity=".45";
         try{
