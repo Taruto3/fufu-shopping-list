@@ -152,12 +152,12 @@ function selectTab(tabName){
 document.querySelectorAll("[data-tab]").forEach(button=>button.onclick=()=>selectTab(button.dataset.tab));
 
 let swipeStart=null;
-$("#listView").addEventListener("touchstart",event=>{
-  if(event.touches.length!==1||event.target.closest("button,input,a")){swipeStart=null;return}
+document.addEventListener("touchstart",event=>{
+  if($("#listView").classList.contains("hidden")||event.touches.length!==1){swipeStart=null;return}
   const touch=event.touches[0];
   swipeStart={x:touch.clientX,y:touch.clientY};
 },{passive:true});
-$("#listView").addEventListener("touchend",event=>{
+document.addEventListener("touchend",event=>{
   if(!swipeStart||event.changedTouches.length!==1)return;
   const touch=event.changedTouches[0];
   const dx=touch.clientX-swipeStart.x;
@@ -166,7 +166,7 @@ $("#listView").addEventListener("touchend",event=>{
   if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.25)return;
   selectTab(dx<0?"completed":"active");
 },{passive:true});
-$("#listView").addEventListener("touchcancel",()=>{swipeStart=null},{passive:true});
+document.addEventListener("touchcancel",()=>{swipeStart=null},{passive:true});
 document.addEventListener("click",event=>{
   if(!event.target.closest("#accountBtn")&&!event.target.closest("#accountMenu"))$("#accountMenu").classList.add("hidden");
 });
