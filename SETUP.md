@@ -34,12 +34,10 @@
 
 FirebaseのAPIキーはWebアプリでは公開される識別情報です。秘密情報ではありません。アクセス制御はFirestoreルールで行います。
 
-## 5. GitHub Pages
+## 5. 公開
 
-1. このフォルダをGitHubの新しいリポジトリへ公開
-2. GitHubの「Settings」→「Pages」
-3. Sourceを「Deploy from a branch」
-4. Branchを `main`、フォルダを `/ (root)` にして保存
-5. 発行されたURLのドメイン（例：`taruto3.github.io`）をFirebase Authenticationの「Settings」→「Authorized domains」へ追加
+ソースコードはGitHubで管理し、アプリはGoogleログインとの互換性が高いFirebase Hostingで公開します。
 
-数分後、GitHub PagesのURLから利用できます。
+公開URL: `https://shopping-list-taruto3.firebaseapp.com/`
+
+GitHub PagesとFirebase Authenticationを組み合わせると、一部ブラウザの第三者ストレージ制限でリダイレクトログインが完了しないことがあります。Firebase Hostingの `firebaseapp.com` URLを使うことで回避します。
