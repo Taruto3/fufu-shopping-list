@@ -1,11 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import { addDoc, collection, deleteDoc, doc, getFirestore, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { addDoc, collection, deleteDoc, doc, getFirestore, onSnapshot, orderBy, query, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 const $=selector=>document.querySelector(selector);
 const views=["#setupView","#loginView","#listView"];
-let auth,db,unsubscribe;
+let auth,db,unsubscribeActive,unsubscribeCompleted;
 
 function showView(selector){views.forEach(id=>$(id).classList.toggle("hidden",id!==selector))}
 function toast(message){
@@ -27,7 +27,8 @@ if(!isConfigured()){
 }
 
 function showLogin(){
-  if(unsubscribe){unsubscribe();unsubscribe=null}
+  if(unsubscribeActive){unsubscribeActive();unsubscribeActive=null}
+  if(unsubscribeCompleted){unsubscribeCompleted();unsubscribeCompleted=null}
   $("#accountBtn").classList.add("hidden");$("#accountMenu").classList.add("hidden");
   showView("#loginView");
 }
@@ -39,13 +40,14 @@ function openList(user){
   $("#userPhoto").alt=user.displayName||"ログイン中";
   $("#userName").textContent=user.displayName||"";
   $("#userEmail").textContent=user.email||"";
-  subscribeToList();
+  subscribeToLists();
 }
 
-function subscribeToList(){
-  if(unsubscribe)unsubscribe();
+function subscribeToLists(){
+  if(unsubscribeActive)unsubscribeActive();
+  if(unsubscribeCompleted)unsubscribeCompleted();
   const itemsQuery=query(collection(db,"shoppingLists","family","items"),orderBy("createdAt","asc"));
-  unsubscribe=onSnapshot(itemsQuery,snapshot=>{
+  unsubscribeActive=onSnapshot(itemsQuery,snapshot=>{
     $("#loadingView").classList.add("hidden");
     $("#shoppingList").innerHTML="";
     snapshot.docs.forEach(itemDoc=>{
@@ -54,13 +56,47 @@ function subscribeToList(){
       li.innerHTML=`<p>${escapeText(item.name)}<small>${escapeText(item.createdByName||"")}</small></p><button class="done-btn" type="button" aria-label="${escapeText(item.name)}を購入済みにする">✓</button>`;
       li.querySelector("button").onclick=async()=>{
         li.style.opacity=".45";
-        try{await deleteDoc(doc(db,"shoppingLists","family","items",itemDoc.id));toast("買いました！")}
+        try{
+          const batch=writeBatch(db);
+          const completedRef=doc(collection(db,"shoppingLists","family","completed"));
+          batch.set(completedRef,{
+            name:item.name,createdAt:item.createdAt||serverTimestamp(),
+            createdBy:item.createdBy||"",createdByName:item.createdByName||"",
+            completedAt:serverTimestamp(),completedBy:auth.currentUser.uid,
+            completedByName:auth.currentUser.displayName||""
+          });
+          batch.delete(doc(db,"shoppingLists","family","items",itemDoc.id));
+          await batch.commit();toast("買い物済みに移しました");
+        }
         catch(error){li.style.opacity="1";showError(error)}
       };
       $("#shoppingList").appendChild(li);
     });
     $("#itemCount").textContent=`${snapshot.size}個`;
+    $("#activeTabCount").textContent=snapshot.size;
     $("#emptyView").classList.toggle("hidden",snapshot.size!==0);
+  },showError);
+
+  const completedQuery=query(collection(db,"shoppingLists","family","completed"),orderBy("completedAt","desc"));
+  unsubscribeCompleted=onSnapshot(completedQuery,snapshot=>{
+    $("#completedLoadingView").classList.add("hidden");
+    $("#completedList").innerHTML="";
+    snapshot.docs.forEach(itemDoc=>{
+      const item=itemDoc.data();
+      const date=item.completedAt&&typeof item.completedAt.toDate==="function"?item.completedAt.toDate():null;
+      const dateText=date?`${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,"0")}`:"";
+      const li=document.createElement("li");li.className="shopping-item";
+      li.innerHTML=`<p>${escapeText(item.name)}<small>${escapeText(dateText)}　${escapeText(item.completedByName||"")}</small></p><button class="delete-btn" type="button" aria-label="${escapeText(item.name)}の履歴を削除">×</button>`;
+      li.querySelector("button").onclick=async()=>{
+        li.style.opacity=".45";
+        try{await deleteDoc(doc(db,"shoppingLists","family","completed",itemDoc.id));toast("履歴から削除しました")}
+        catch(error){li.style.opacity="1";showError(error)}
+      };
+      $("#completedList").appendChild(li);
+    });
+    $("#completedCount").textContent=`${snapshot.size}個`;
+    $("#completedTabCount").textContent=snapshot.size;
+    $("#completedEmptyView").classList.toggle("hidden",snapshot.size!==0);
   },showError);
 }
 
@@ -94,6 +130,12 @@ $("#addForm").onsubmit=async event=>{
 
 $("#accountBtn").onclick=()=>$("#accountMenu").classList.toggle("hidden");
 $("#logoutBtn").onclick=()=>signOut(auth);
+document.querySelectorAll("[data-tab]").forEach(button=>button.onclick=()=>{
+  const completed=button.dataset.tab==="completed";
+  document.querySelectorAll("[data-tab]").forEach(tab=>tab.classList.toggle("active",tab===button));
+  $("#activePanel").classList.toggle("hidden",completed);
+  $("#completedPanel").classList.toggle("hidden",!completed);
+});
 document.addEventListener("click",event=>{
   if(!event.target.closest("#accountBtn")&&!event.target.closest("#accountMenu"))$("#accountMenu").classList.add("hidden");
 });
