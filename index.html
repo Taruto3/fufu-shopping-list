@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f47f6b">
+  <meta name="description" content="夫婦で共有できる、シンプルな買い物リスト">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <title>ふたりの買い物リスト</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">OUR SHOPPING LIST</p>
+        <h1><span>ふたりの</span>買い物リスト</h1>
+      </div>
+      <button id="accountBtn" class="account-btn hidden" type="button" aria-label="アカウントメニュー">
+        <img id="userPhoto" alt="">
+      </button>
+    </header>
+
+    <section id="setupView" class="card setup-view hidden">
+      <span class="large-icon">⚙</span>
+      <h2>最初の設定が必要です</h2>
+      <p>Firebaseの設定を入れると、夫婦のスマホで同じリストを共有できます。</p>
+      <a href="SETUP.md">設定手順を見る</a>
+    </section>
+
+    <section id="loginView" class="card login-view hidden">
+      <div class="basket-icon" aria-hidden="true">🧺</div>
+      <h2>おかえりなさい</h2>
+      <p>夫婦どちらかのGoogleアカウントでログインしてください。</p>
+      <button id="loginBtn" class="google-btn" type="button">
+        <span>G</span> Googleでログイン
+      </button>
+      <small>登録した2人以外はリストを開けません</small>
+    </section>
+
+    <section id="listView" class="list-view hidden">
+      <form id="addForm" class="add-form">
+        <label for="itemInput">買うもの</label>
+        <div class="input-row">
+          <input id="itemInput" name="item" type="text" maxlength="60" autocomplete="off" placeholder="例：牛乳" required>
+          <button type="submit" aria-label="リストに追加"><span>＋</span>追加</button>
+        </div>
+      </form>
+
+      <div class="list-heading">
+        <h2>買うもの</h2>
+        <span id="itemCount">0個</span>
+      </div>
+
+      <div id="loadingView" class="status-card">読み込み中…</div>
+      <div id="emptyView" class="empty-view hidden">
+        <span>✓</span>
+        <h3>ぜんぶ買えました</h3>
+        <p>必要なものができたら追加しましょう</p>
+      </div>
+      <ul id="shoppingList" class="shopping-list" aria-live="polite"></ul>
+    </section>
+
+    <div id="accountMenu" class="account-menu hidden">
+      <p id="userName"></p>
+      <small id="userEmail"></small>
+      <button id="logoutBtn" type="button">ログアウト</button>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status"></div>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
